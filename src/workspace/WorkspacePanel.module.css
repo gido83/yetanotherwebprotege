@@ -1,0 +1,413 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+  border-top: 1px solid rgba(23, 33, 29, 0.08);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px 0 16px;
+  flex-shrink: 0;
+}
+
+.header strong {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #17211d;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.iconBtn {
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #52645d;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 100ms ease, border-color 100ms ease;
+}
+
+.iconBtn:hover {
+  border-color: #c8d8d3;
+  background: #edf5f2;
+  color: #17211d;
+}
+
+.tree {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 0 16px;
+  scrollbar-color: #c6d6d1 transparent;
+  scrollbar-width: thin;
+}
+
+.tree::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tree::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c6d6d1;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 16px;
+  color: #8a9a93;
+  text-align: center;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* ── Tree nodes ────────────────────────────────────────── */
+
+.nodeRow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 28px;
+  padding-right: 6px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: #1e2d27;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  text-align: left;
+}
+
+.nodeRow:hover {
+  background: rgba(20, 107, 91, 0.06);
+}
+
+.nodeRow.active {
+  background: rgba(20, 107, 91, 0.1);
+  color: #0d4d44;
+}
+
+.nodeRow.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: #146b5b;
+}
+
+.nodeRow.dragOver {
+  background: rgba(20, 107, 91, 0.12);
+  outline: 1px dashed #94c8ba;
+  outline-offset: -1px;
+}
+
+.indent {
+  flex-shrink: 0;
+}
+
+.toggle {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #68746f;
+}
+
+.toggleSpacer {
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.nodeIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+}
+
+.nodeName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.nodeNameInput {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid #94c8ba;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #17211d;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 107, 91, 0.12);
+}
+
+.activeBadge {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #146b5b;
+  margin-left: 4px;
+}
+
+/* ── Context menu ──────────────────────────────────────── */
+
+.contextMenu {
+  position: fixed;
+  z-index: 9999;
+  min-width: 160px;
+  padding: 4px;
+  border: 1px solid #d0d9d5;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(23, 33, 29, 0.14), 0 2px 6px rgba(23, 33, 29, 0.08);
+}
+
+.contextMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  color: #1e2d27;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.contextMenuItem:hover {
+  background: #f0faf7;
+}
+
+.contextMenuDivider {
+  height: 1px;
+  margin: 3px 4px;
+  background: #e8edeb;
+}
+
+.contextMenuDanger {
+  color: #8d2b2b;
+}
+
+.contextMenuDanger:hover {
+  background: #fff0f0;
+  color: #7d1f1f;
+}
+
+/* ── Import dialog ─────────────────────────────────────── */
+
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: rgba(23, 33, 29, 0.52);
+  backdrop-filter: blur(4px);
+}
+
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  border: 1px solid #c8d0cc;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 20px 60px rgba(23, 33, 29, 0.22);
+  overflow: hidden;
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid #edf0ee;
+}
+
+.dialogHeader strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.dialogBody {
+  padding: 16px 18px 20px;
+  display: grid;
+  gap: 14px;
+}
+
+.dropZone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 100px;
+  padding: 20px;
+  border: 2px dashed #b8ccc7;
+  border-radius: 10px;
+  background: #f8fbfa;
+  color: #68746f;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+  text-align: center;
+}
+
+.dropZone:hover,
+.dropZone.dragActive {
+  border-color: #146b5b;
+  background: #eef8f4;
+  color: #0d4d44;
+}
+
+.dropZone p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dropZone small {
+  font-size: 11px;
+  color: #8a9a93;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #52645d;
+}
+
+.textField {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #c8d0cc;
+  border-radius: 8px;
+  background: #fafbfb;
+  color: #17211d;
+  font: inherit;
+  font-size: 13px;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.textField:focus {
+  border-color: #146b5b;
+  outline: 0;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(20, 107, 91, 0.1);
+}
+
+.textField::placeholder {
+  color: #a5abaa;
+  font-weight: 500;
+}
+
+.selectedFile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #b8d4cc;
+  border-radius: 8px;
+  background: #eef8f4;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0d4d44;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 18px 16px;
+}
+
+.btnSecondary {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid #c8d0cc;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344039;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.btnSecondary:hover {
+  background: #f5f8f7;
+}
+
+.btnPrimary {
+  min-height: 34px;
+  padding: 0 16px;
+  border: 1px solid rgba(13, 77, 68, 0.18);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #1d806e, #146b5b);
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.btnPrimary:disabled {
+  opacity: 0.44;
+  cursor: default;
+}
+
+.btnPrimary:not(:disabled):hover {
+  background: #0d5c4e;
+}
