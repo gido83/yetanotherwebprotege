@@ -16,7 +16,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
-import { useWorkspace, exportOWL, type WorkspaceNode, type WorkspaceFolder, type WorkspaceOntology } from "./WorkspaceStore";
+import { useWorkspace, exportOWL, mergeWithImports, type WorkspaceNode, type WorkspaceFolder, type WorkspaceOntology, type OWLDoc } from "./WorkspaceStore";
 import { parseOWL } from "../owl/parser";
 import styles from "./WorkspacePanel.module.css";
 
@@ -250,6 +250,67 @@ function RenameInput({
   );
 }
 
+// ─── Download helpers ─────────────────────────────────────────────────────────
+
+function downloadOWLDoc(doc: OWLDoc, filename: string) {
+  const xml = exportOWL(doc);
+  const blob = new Blob([xml], { type: "application/rdf+xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function DownloadOptionsDialog({
+  node,
+  onClose,
+}: {
+  node: WorkspaceOntology;
+  onClose: () => void;
+}) {
+  const { state } = useWorkspace();
+  const imports = node.parsed?.imports ?? [];
+
+  function handleChoice(includeImports: boolean) {
+    if (!node.parsed) return;
+    const doc = includeImports ? mergeWithImports(node.parsed, state.tree) : node.parsed;
+    downloadOWLDoc(doc, `${node.name}${includeImports ? "-with-imports" : ""}.owl`);
+    onClose();
+  }
+
+  return createPortal(
+    <div className={styles.dialogBackdrop} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className={styles.dialog} role="dialog" aria-modal="true" aria-label="Download ontology">
+        <div className={styles.dialogHeader}>
+          <strong>Download ontology</strong>
+          <button className={styles.iconBtn} onClick={onClose} aria-label="Close">
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className={styles.dialogBody}>
+          <p style={{ margin: 0, fontSize: 13, color: "#52645d" }}>
+            <strong>{node.name}</strong> imports {imports.length === 1 ? "another ontology" : `${imports.length} other ontologies`}.
+            Do you want to include {imports.length === 1 ? "its" : "their"} classes and properties in the downloaded file?
+          </p>
+        </div>
+
+        <div className={styles.dialogActions}>
+          <button className={styles.btnSecondary} onClick={() => handleChoice(false)}>
+            Just this ontology
+          </button>
+          <button className={styles.btnPrimary} onClick={() => handleChoice(true)}>
+            Include imports
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 // ─── Tree nodes ───────────────────────────────────────────────────────────────
 
 function OntologyNode({
@@ -272,6 +333,7 @@ function OntologyNode({
   const { dispatch } = useWorkspace();
   const isActive = node.id === activeId;
   const renaming = renamingId === node.id;
+  const [showDownloadOptions, setShowDownloadOptions] = React.useState(false);
 
   return (
     <div
@@ -310,18 +372,18 @@ function OntologyNode({
             onClick={(e) => {
               e.stopPropagation();
               if (!node.parsed) return;
-              const xml = exportOWL(node.parsed);
-              const blob = new Blob([xml], { type: "application/rdf+xml" });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = `${node.name}.owl`;
-              a.click();
-              URL.revokeObjectURL(url);
+              if ((node.parsed.imports ?? []).length > 0) {
+                setShowDownloadOptions(true);
+                return;
+              }
+              downloadOWLDoc(node.parsed, `${node.name}.owl`);
             }}
           >
             <Download size={13} />
           </button>
+          {showDownloadOptions && (
+            <DownloadOptionsDialog node={node} onClose={() => setShowDownloadOptions(false)} />
+          )}
         </>
       )}
     </div>

@@ -115,6 +115,42 @@ function removeNode(nodes: WorkspaceNode[], id: string): WorkspaceNode[] {
   return mapTree(nodes, (node) => (node.id === id ? null : node));
 }
 
+// Resolves an ontology's owl:imports transitively against the workspace tree and
+// returns a new OWLDoc with the imported ontologies' classes/properties/individuals
+// physically merged in (deduped by IRI). Used for "include imports" downloads —
+// the result is a single self-contained file with no remaining owl:imports.
+export function mergeWithImports(doc: OWLDoc, tree: WorkspaceNode[]): OWLDoc {
+  if (!doc.imports || doc.imports.length === 0) return doc;
+  const all = flattenOntologies(tree);
+  const visited = new Set<string>([doc.iri]);
+  const queue = [...doc.imports];
+
+  const classes = [...doc.classes];
+  const objectProperties = [...doc.objectProperties];
+  const datatypeProperties = [...doc.datatypeProperties];
+  const individuals = [...doc.individuals];
+  const seenClassIris = new Set(classes.map((c) => c.iri));
+  const seenObjectPropIris = new Set(objectProperties.map((p) => p.iri));
+  const seenDatatypePropIris = new Set(datatypeProperties.map((p) => p.iri));
+  const seenIndividualIris = new Set(individuals.map((i) => i.iri));
+
+  while (queue.length > 0) {
+    const iri = queue.shift()!;
+    if (visited.has(iri)) continue;
+    visited.add(iri);
+    const match = all.find((o) => o.parsed?.iri === iri);
+    if (!match?.parsed) continue;
+
+    for (const c of match.parsed.classes) if (!seenClassIris.has(c.iri)) { seenClassIris.add(c.iri); classes.push(c); }
+    for (const p of match.parsed.objectProperties) if (!seenObjectPropIris.has(p.iri)) { seenObjectPropIris.add(p.iri); objectProperties.push(p); }
+    for (const p of match.parsed.datatypeProperties) if (!seenDatatypePropIris.has(p.iri)) { seenDatatypePropIris.add(p.iri); datatypeProperties.push(p); }
+    for (const i of match.parsed.individuals) if (!seenIndividualIris.has(i.iri)) { seenIndividualIris.add(i.iri); individuals.push(i); }
+    queue.push(...(match.parsed.imports ?? []));
+  }
+
+  return { ...doc, classes, objectProperties, datatypeProperties, individuals, imports: [] };
+}
+
 export function flattenOntologies(nodes: WorkspaceNode[]): WorkspaceOntology[] {
   const result: WorkspaceOntology[] = [];
   for (const node of nodes) {
